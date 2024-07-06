@@ -7,7 +7,7 @@ class ListAuctionSerializer(ModelSerializer):
     class LotSerializer(ModelSerializer):
         class Meta:
             model = Lot
-            fields = ("description",)
+            fields = ("id", "name",)
 
     lot = LotSerializer()
     bids = IntegerField()

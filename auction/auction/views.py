@@ -8,7 +8,10 @@ from rest_framework.generics import (
     RetrieveUpdateAPIView,
     get_object_or_404,
 )
+from rest_framework.filters import OrderingFilter, SearchFilter
 from django.db.models import Count
+from django_filters.rest_framework import DjangoFilterBackend
+
 from auction.auction.models import Auction, AuctionBid
 from auction.auction.services.manage_status_auction import ManageStatusAuctionService
 from auction.auction.serializers import (
@@ -20,10 +23,15 @@ from auction.auction.services.crud_auction import AuctionCRUDService
 
 
 class ListCreateAuctionView(ListCreateAPIView):
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+    ordering_fields = ("status", "finished_at", "start_at", "bids")
+    ordering = ("-start_at",)
+    search_fields = ("lot__name",)
+    filterset_fields = ("status", "start_at", "finished_at")
+
     def get_queryset(self):
         return (
-            Auction.objects
-            .select_related("lot")
+            Auction.objects.select_related("lot")
             .prefetch_related("auctionbid_set")
             .annotate(bids=Count("auctionbid"))
             .all()
@@ -75,7 +83,7 @@ class StartAuctionView(APIView):
         service = ManageStatusAuctionService(auction=auction)
         started_auction = service.start()
 
-        output_serializer = ListAuctionSerializer(instance=started_auction)
+        output_serializer = CreateRetrieveUpdateAuctionSerializer(instance=started_auction)
 
         return Response(status=status.HTTP_200_OK, data=output_serializer.data)
 
@@ -89,13 +97,16 @@ class FinishAuctionView(APIView):
         service = ManageStatusAuctionService(auction=auction)
         finished = service.finish()
 
-        output_serializer = ListAuctionSerializer(instance=finished)
+        output_serializer = CreateRetrieveUpdateAuctionSerializer(instance=finished)
 
         return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
 
 
 class ListAuctionBidView(ListAPIView):
     serializer_class = AuctionBidSerializer
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    ordering_fields = ("value", "created_at",)
+    ordering = ("-created_at",)
 
     def get_queryset(self):
         auction_id = self.kwargs["pk"]
