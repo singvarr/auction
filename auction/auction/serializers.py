@@ -34,7 +34,7 @@ class ListAuctionSerializer(ModelSerializer):
 
 
 class CreateUpdateAuctionSerializer(Serializer):
-    name = CharField(max_length=255)
+    name = CharField(max_length=50)
     initial_price = FloatField(min_value=0)
     description = CharField()
     image = ImageField(allow_empty_file=True)
