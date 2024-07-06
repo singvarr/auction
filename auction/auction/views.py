@@ -34,7 +34,8 @@ class ListCreateAuctionView(ListCreateAPIView):
 
     def get_queryset(self):
         return (
-            Auction.objects.select_related("lot")
+            Auction.objects
+            .select_related("lot")
             .prefetch_related("auctionbid_set")
             .annotate(bids=Count("auctionbid"))
             .all()
