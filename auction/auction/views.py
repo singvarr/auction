@@ -3,21 +3,31 @@ from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (
+    ListAPIView,
     ListCreateAPIView,
     RetrieveUpdateAPIView,
     get_object_or_404,
 )
-from auction.auction.models import Auction
+from django.db.models import Count
+from auction.auction.models import Auction, AuctionBid
 from auction.auction.services.manage_status_auction import ManageStatusAuctionService
 from auction.auction.serializers import (
-    ListAuctionSerializer,
+    AuctionBidSerializer,
     CreateRetrieveUpdateAuctionSerializer,
+    ListAuctionSerializer,
 )
 from auction.auction.services.crud_auction import AuctionCRUDService
 
 
 class ListCreateAuctionView(ListCreateAPIView):
-    queryset = Auction.objects.select_related("lot").all()
+    def get_queryset(self):
+        return (
+            Auction.objects
+            .select_related("lot")
+            .prefetch_related("auctionbid_set")
+            .annotate(bids=Count("auctionbid"))
+            .all()
+        )
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -82,3 +92,13 @@ class FinishAuctionView(APIView):
         output_serializer = ListAuctionSerializer(instance=finished)
 
         return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
+
+
+class ListAuctionBidView(ListAPIView):
+    serializer_class = AuctionBidSerializer
+
+    def get_queryset(self):
+        auction_id = self.kwargs["pk"]
+        get_object_or_404(Auction, pk=auction_id)
+
+        return AuctionBid.objects.filter(auction_id=auction_id)
