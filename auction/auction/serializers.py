@@ -1,6 +1,6 @@
 from django.utils import timezone
-from rest_framework.serializers import ModelSerializer, ValidationError
-from auction.auction.models import Auction, Lot
+from rest_framework.serializers import IntegerField, ModelSerializer, ValidationError
+from auction.auction.models import Auction, AuctionBid, Lot
 
 
 class ListAuctionSerializer(ModelSerializer):
@@ -10,6 +10,7 @@ class ListAuctionSerializer(ModelSerializer):
             fields = ("description",)
 
     lot = LotSerializer()
+    bids = IntegerField()
 
     class Meta:
         model = Auction
@@ -19,6 +20,7 @@ class ListAuctionSerializer(ModelSerializer):
             "start_at",
             "finished_at",
             "lot",
+            "bids",
         )
 
 
@@ -50,3 +52,9 @@ class CreateRetrieveUpdateAuctionSerializer(ModelSerializer):
             "lot",
         )
         read_only_fields = ("id",)
+
+
+class AuctionBidSerializer(ModelSerializer):
+    class Meta:
+        model = AuctionBid
+        fields = "__all__"

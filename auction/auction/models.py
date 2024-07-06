@@ -27,3 +27,9 @@ class Auction(models.Model):
         max_length=255,
     )
     lot = models.OneToOneField(Lot, on_delete=models.CASCADE)
+
+
+class AuctionBid(models.Model):
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    value = models.FloatField(validators=[MinValueValidator(0)])
+    created_at = models.DateTimeField(auto_now_add=True)
