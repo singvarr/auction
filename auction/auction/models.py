@@ -6,7 +6,7 @@ class Lot(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
     initial_price = models.FloatField(validators=[MinValueValidator(0)])
-    image = models.ImageField(upload_to='lots/', null=True, default=None)
+    image = models.ImageField(upload_to="lots/", null=True, default=None)
     sold_price = models.FloatField(
         validators=[MinValueValidator(0)],
         null=True,
