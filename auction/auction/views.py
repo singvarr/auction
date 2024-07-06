@@ -9,6 +9,7 @@ from rest_framework.generics import (
     get_object_or_404,
 )
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.parsers import MultiPartParser
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -16,13 +17,15 @@ from auction.auction.models import Auction, AuctionBid
 from auction.auction.services.manage_status_auction import ManageStatusAuctionService
 from auction.auction.serializers import (
     AuctionBidSerializer,
-    CreateRetrieveUpdateAuctionSerializer,
+    CreateUpdateAuctionSerializer,
     ListAuctionSerializer,
+    RetrieveAuctionSerializer,
 )
 from auction.auction.services.crud_auction import AuctionCRUDService
 
 
 class ListCreateAuctionView(ListCreateAPIView):
+    parser_classes = [MultiPartParser]
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
     ordering_fields = ("status", "finished_at", "start_at", "bids")
     ordering = ("-start_at",)
@@ -41,35 +44,37 @@ class ListCreateAuctionView(ListCreateAPIView):
         if self.request.method == "GET":
             return ListAuctionSerializer
         if self.request.method == "POST":
-            return CreateRetrieveUpdateAuctionSerializer
+            return RetrieveAuctionSerializer
+
         return MethodNotAllowed(method=self.request.method)
 
     def create(self, request, **_):
-        input_serializer = CreateRetrieveUpdateAuctionSerializer(data=request.data)
+        input_serializer = CreateUpdateAuctionSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
 
-        service = AuctionCRUDService(data=input_serializer.data)
+        service = AuctionCRUDService(data=input_serializer.validated_data)
         auction = service.create()
 
-        output_serializer = CreateRetrieveUpdateAuctionSerializer(instance=auction)
+        output_serializer = RetrieveAuctionSerializer(instance=auction)
 
         return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
 
 
 class RetrieveUpdateAuctionView(RetrieveUpdateAPIView):
+    parser_classes = [MultiPartParser]
     queryset = Auction.objects.select_related("lot").all()
-    serializer_class = CreateRetrieveUpdateAuctionSerializer
+    serializer_class = RetrieveAuctionSerializer
 
     def update(self, request, pk, **_):
         auction = get_object_or_404(Auction, pk=pk)
 
-        input_serializer = CreateRetrieveUpdateAuctionSerializer(data=request.data)
+        input_serializer = CreateUpdateAuctionSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
 
-        service = AuctionCRUDService(data=input_serializer.data)
+        service = AuctionCRUDService(data=input_serializer.validated_data)
         auction = service.update(auction=auction)
 
-        output_serializer = CreateRetrieveUpdateAuctionSerializer(instance=auction)
+        output_serializer = RetrieveAuctionSerializer(instance=auction)
 
         return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
 
@@ -77,13 +82,13 @@ class RetrieveUpdateAuctionView(RetrieveUpdateAPIView):
 class StartAuctionView(APIView):
     http_method_names = ["post"]
 
-    def post(self, request, pk, **_):
+    def post(self, pk, **_):
         auction = get_object_or_404(Auction, pk=pk)
 
         service = ManageStatusAuctionService(auction=auction)
         started_auction = service.start()
 
-        output_serializer = CreateRetrieveUpdateAuctionSerializer(instance=started_auction)
+        output_serializer = RetrieveAuctionSerializer(instance=started_auction)
 
         return Response(status=status.HTTP_200_OK, data=output_serializer.data)
 
@@ -91,13 +96,13 @@ class StartAuctionView(APIView):
 class FinishAuctionView(APIView):
     http_method_names = ["post"]
 
-    def post(self, request, pk, **_):
+    def post(self, pk, **_):
         auction = get_object_or_404(Auction, pk=pk)
 
         service = ManageStatusAuctionService(auction=auction)
-        finished = service.finish()
+        finished_auction = service.finish()
 
-        output_serializer = CreateRetrieveUpdateAuctionSerializer(instance=finished)
+        output_serializer = RetrieveAuctionSerializer(instance=finished_auction)
 
         return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
 

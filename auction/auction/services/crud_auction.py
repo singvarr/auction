@@ -9,9 +9,10 @@ class AuctionCRUDService:
     def create(self) -> Auction:
         with transaction.atomic():
             lot = Lot.objects.create(
-                name=self._data["lot"]["name"],
-                initial_price=self._data["lot"]["initial_price"],
-                description=self._data["lot"]["description"],
+                name=self._data["name"],
+                initial_price=self._data["initial_price"],
+                description=self._data["description"],
+                image=self._data["image"],
             )
 
             auction = Auction.objects.create(lot=lot, start_at=self._data["start_at"])
@@ -23,9 +24,10 @@ class AuctionCRUDService:
             if auction.status != Auction.Status.NOT_CONDUCTED:
                 raise InvalidAuctionStatusException(detail=f'Cannot edit details of {auction.status} auction')
 
-            auction.lot.name = self._data["lot"]["name"]
-            auction.lot.initial_price = self._data["lot"]["initial_price"]
-            auction.lot.description = self._data["lot"]["description"]
+            auction.lot.name = self._data["name"]
+            auction.lot.initial_price = self._data["initial_price"]
+            auction.lot.description = self._data["description"]
+            auction.lot.image = self._data["image"]
             auction.lot.save()
 
             auction.start_at = self._data["start_at"]
