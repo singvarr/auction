@@ -7,8 +7,8 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 django-filter = "*"
-uuid = "*"
 pillow = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 
