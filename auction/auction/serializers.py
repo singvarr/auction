@@ -37,7 +37,7 @@ class CreateUpdateAuctionSerializer(Serializer):
     name = CharField(max_length=50)
     initial_price = FloatField(min_value=0)
     description = CharField()
-    image = ImageField(allow_empty_file=True)
+    image = ImageField(allow_empty_file=True, allow_null=True, default=None)
     start_at = DateTimeField(allow_null=True, default=None)
 
     def validate_start_at(self, attr):
