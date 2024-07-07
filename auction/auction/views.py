@@ -10,6 +10,7 @@ from rest_framework.generics import (
 )
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import AllowAny, IsAdminUser
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -31,6 +32,14 @@ class ListCreateAuctionView(ListCreateAPIView):
     ordering = ("-start_at",)
     search_fields = ("lot__name",)
     filterset_fields = ("status", "start_at", "finished_at")
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        if self.request.method == "POST":
+            return [IsAdminUser()]
+
+        return MethodNotAllowed(method=self.request.method)
 
     def get_queryset(self):
         return (
@@ -66,6 +75,14 @@ class RetrieveUpdateAuctionView(RetrieveUpdateAPIView):
     queryset = Auction.objects.select_related("lot").all()
     serializer_class = RetrieveAuctionSerializer
 
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        if self.request.method == "PUT":
+            return [IsAdminUser()]
+
+        return MethodNotAllowed(method=self.request.method)
+
     def update(self, request, pk, **_):
         auction = get_object_or_404(Auction, pk=pk)
 
@@ -82,8 +99,9 @@ class RetrieveUpdateAuctionView(RetrieveUpdateAPIView):
 
 class StartAuctionView(APIView):
     http_method_names = ["post"]
+    permission_classes = [IsAdminUser]
 
-    def post(self, pk, **_):
+    def post(self, request, pk, **_):
         auction = get_object_or_404(Auction, pk=pk)
 
         service = ManageStatusAuctionService(auction=auction)
@@ -96,8 +114,9 @@ class StartAuctionView(APIView):
 
 class FinishAuctionView(APIView):
     http_method_names = ["post"]
+    permission_classes = [IsAdminUser]
 
-    def post(self, pk, **_):
+    def post(self, request, pk, **_):
         auction = get_object_or_404(Auction, pk=pk)
 
         service = ManageStatusAuctionService(auction=auction)
