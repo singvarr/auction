@@ -9,6 +9,7 @@ djangorestframework = "*"
 django-filter = "*"
 pillow = "*"
 djangorestframework-simplejwt = "*"
+pusher = "*"
 
 [dev-packages]
 

@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.core.validators import MinValueValidator
+from auction.notification.service import NotificationService
 
 
 class Lot(models.Model):
@@ -29,6 +32,12 @@ class Auction(models.Model):
         max_length=255,
     )
     lot = models.OneToOneField(Lot, on_delete=models.CASCADE)
+
+    @receiver(post_save)
+    def notify_about_new_auction(sender, instance, created, **_):
+        if sender == Auction and created:
+            service = NotificationService()
+            service.send_notification_about_created_auction(auction=instance)
 
 
 class AuctionBid(models.Model):
