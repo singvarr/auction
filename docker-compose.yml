@@ -1,0 +1,27 @@
+version: '3.7'
+
+services:
+  auction-db:
+    image: postgres:16.0
+    volumes:
+      - auction-db:/var/lib/postgresql/auction-db/
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_PASSWORD: $DB_PASSWORD
+    container_name: auction-db
+    ports:
+      - 5433:$DB_PORT
+
+  auction-api:
+    build: .
+    volumes:
+      - .:/app/
+    depends_on:
+      - auction-db
+    ports:
+      - $PORT:$PORT
+    restart: always
+
+volumes:
+  auction-db:
