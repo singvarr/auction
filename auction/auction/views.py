@@ -2,12 +2,7 @@ from rest_framework import status
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import (
-    ListAPIView,
-    ListCreateAPIView,
-    RetrieveUpdateAPIView,
-    get_object_or_404,
-)
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, get_object_or_404
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -16,13 +11,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from auction.auction.models import Auction, AuctionBid
 from auction.auction.services.manage_status_auction import ManageStatusAuctionService
-from auction.auction.serializers import (
-    AuctionBidSerializer,
-    CreateUpdateAuctionSerializer,
-    ListAuctionSerializer,
-    RetrieveAuctionSerializer,
-)
-from auction.auction.services.crud_auction import AuctionCRUDService
+from auction.auction.serializers import (AuctionBidSerializer, CreateAuctionBidSerializer,
+    CreateUpdateAuctionSerializer, ListAuctionSerializer, RetrieveAuctionSerializer)
+from auction.auction.services.auction_crud import AuctionCRUDService
+from auction.auction.services.auction_bid import AuctionBidService
 
 
 class ListCreateAuctionView(ListCreateAPIView):
@@ -127,7 +119,7 @@ class FinishAuctionView(APIView):
         return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
 
 
-class ListAuctionBidView(ListAPIView):
+class CreateListAuctionBidView(ListCreateAPIView):
     serializer_class = AuctionBidSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter)
     ordering_fields = ("value", "created_at",)
@@ -137,4 +129,17 @@ class ListAuctionBidView(ListAPIView):
         auction_id = self.kwargs["pk"]
         get_object_or_404(Auction, pk=auction_id)
 
-        return AuctionBid.objects.filter(auction_id=auction_id)
+        return AuctionBid.objects.select_related("made_by").filter(auction_id=auction_id)
+
+    def create(self, request, pk, **_):
+        input_serializer = CreateAuctionBidSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+
+        auction = get_object_or_404(Auction, pk=pk)
+
+        service = AuctionBidService()
+        bid = service.create(data=input_serializer.validated_data, user=request.user, auction=auction)
+
+        output_serializer = self.serializer_class(instance=bid)
+
+        return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
