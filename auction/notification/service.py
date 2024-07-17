@@ -27,7 +27,7 @@ class NotificationService:
         self._send_auction_event(event_type=EventTypes.FINISHED_AUCTION, auction=auction)
 
     def send_notification_about_new_bid(self, bid: AuctionBid, socket_id: str):
-        channel_name = Channels.AUCTION.format(ID=bid.auction.pk)
+        channel_name = Channels.AUCTION.format(id=bid.auction.pk)
 
         self._client.trigger(
             channels=channel_name,
