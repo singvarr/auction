@@ -2,4 +2,5 @@ from enum import Enum
 
 
 class Channels(str, Enum):
-    GENERAL = "GENERAL"
+    GENERAL = "general"
+    AUCTION = "presence-auction-{ID}"
