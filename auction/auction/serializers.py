@@ -10,6 +10,7 @@ from rest_framework.serializers import (
     ValidationError,
 )
 from auction.auction.models import Auction, AuctionBid, Lot
+from auction.user.models import User
 
 
 class ListAuctionSerializer(ModelSerializer):
@@ -62,6 +63,21 @@ class RetrieveAuctionSerializer(ModelSerializer):
 
 
 class AuctionBidSerializer(ModelSerializer):
+    class UserSerializer(ModelSerializer):
+        class Meta:
+            model = User
+            fields = "id", "first_name", "last_name", "avatar"
+
+    made_by = UserSerializer()
+
     class Meta:
         model = AuctionBid
         fields = "__all__"
+
+
+class CreateAuctionBidSerializer(ModelSerializer):
+    socket_id = CharField()
+
+    class Meta:
+        model = AuctionBid
+        fields = "value", "socket_id"

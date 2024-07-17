@@ -32,6 +32,7 @@ class Auction(models.Model):
         max_length=255,
     )
     lot = models.OneToOneField(Lot, on_delete=models.CASCADE)
+    winner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, default=None, null=True)
 
     @receiver(post_save)
     def notify_about_new_auction(sender, instance, created, **_):
