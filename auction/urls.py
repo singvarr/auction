@@ -23,6 +23,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("auctions/", include("auction.auction.urls")),
     path("users/", include("auction.user.urls")),
+    path("notifications/", include("auction.notification.urls")),
 ]
 
 if settings.DEBUG:
