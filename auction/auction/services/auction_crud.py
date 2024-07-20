@@ -1,5 +1,6 @@
 from django.db import transaction
 from auction.auction.models import Auction, Lot
+from auction.auction.exceptions import error_messages
 
 
 class AuctionCRUDService:
@@ -22,7 +23,9 @@ class AuctionCRUDService:
     def update(self, auction: Auction) -> Auction:
         with transaction.atomic():
             if auction.status != Auction.Status.NOT_CONDUCTED:
-                raise InvalidAuctionStatusException(detail=f"Cannot edit details of {auction.status} auction")
+                raise InvalidAuctionStatusException(
+                    detail=error_messages["AUCTION_EDIT_FAILURE"].format(status=auction.status),
+                )
 
             auction.lot.name = self._data["name"]
             auction.lot.initial_price = self._data["initial_price"]

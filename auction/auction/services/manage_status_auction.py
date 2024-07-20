@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.db import transaction
 from auction.auction.models import Auction
-from auction.auction.exceptions import InvalidAuctionStatusException
+from auction.auction.exceptions import error_messages, InvalidAuctionStatusException
 from auction.notification.service import NotificationService
 from auction.auction.services.auction_bid import AuctionBidService
 
@@ -14,7 +14,9 @@ class ManageStatusAuctionService:
 
     def start(self) -> Auction:
         if self._auction.status != Auction.Status.NOT_CONDUCTED:
-            raise InvalidAuctionStatusException(detail=f"Cannot start an auction with status {self._auction.status}")
+            raise InvalidAuctionStatusException(
+                detail=error_messages["AUCTION_START_FAILURE"].format(status=self._auction.status),
+            )
 
         self._auction.start_at = datetime.now()
         self._auction.status = Auction.Status.ACTIVE
@@ -26,7 +28,9 @@ class ManageStatusAuctionService:
 
     def finish(self) -> Auction:
         if self._auction.status != Auction.Status.ACTIVE:
-            raise InvalidAuctionStatusException(detail=f"Cannot finish an auction with status {self._auction.status}")
+            raise InvalidAuctionStatusException(
+                detail=error_messages["AUCTION_FINISH_FAILURE"].format(status=self._auction.status),
+            )
 
         latest_bid = self._auction_bid_service.find_latest_bid(auction=self._auction)
 
