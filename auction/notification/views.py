@@ -21,7 +21,7 @@ class NotificationAuthView(APIView):
 
     @extend_schema(
         request=NotificationAuthInputSerializer,
-        description="The endpoint for authentication connection in auction channel",
+        description="The endpoint for authentication of connection to auction channel",
         responses={
             status.HTTP_200_OK: NotificationAuthOutputSerializer,
             status.HTTP_403_FORBIDDEN: BaseErrorSerializer,
