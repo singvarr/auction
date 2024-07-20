@@ -14,12 +14,12 @@ from auction.user.models import User
 
 
 class ListAuctionSerializer(ModelSerializer):
-    class LotSerializer(ModelSerializer):
+    class ListAuctionLotSerializer(ModelSerializer):
         class Meta:
             model = Lot
             fields = ("id", "name", "image")
 
-    lot = LotSerializer()
+    lot = ListAuctionLotSerializer()
     bids = IntegerField()
 
     class Meta:
@@ -49,12 +49,12 @@ class CreateUpdateAuctionSerializer(Serializer):
 
 
 class RetrieveAuctionSerializer(ModelSerializer):
-    class LotSerializer(ModelSerializer):
+    class RetrieveAuctionLotSerializer(ModelSerializer):
         class Meta:
             model = Lot
             fields = ("id", "name", "initial_price", "description", "image")
 
-    lot = LotSerializer()
+    lot = RetrieveAuctionLotSerializer()
 
     class Meta:
         model = Auction
