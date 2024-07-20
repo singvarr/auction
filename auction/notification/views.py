@@ -3,17 +3,30 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema
 from auction.notification.pusher import pusher_client
-from auction.notification.serializers import NotificationAuthInputSerializer
+from auction.notification.serializers import (
+    NotificationAuthInputSerializer,
+    NotificationAuthOutputSerializer,
+)
 from auction.auction.models import Auction
 from auction.notification.service import NotificationService
 from auction.user.service import UserService
+from auction.common.base_error_serializer import BaseErrorSerializer
 
 
 class NotificationAuthView(APIView):
     http_method_names = ["post"]
     permission_classes = (AllowAny,)
 
+    @extend_schema(
+        request=NotificationAuthInputSerializer,
+        description="The endpoint for authentication connection in auction channel",
+        responses={
+            status.HTTP_200_OK: NotificationAuthOutputSerializer,
+            status.HTTP_403_FORBIDDEN: BaseErrorSerializer,
+        }
+    )
     def post(self, request, **_):
         """
         Pusher auth endpoint should return 403 error on failure of user authorization because Pusher requires this
