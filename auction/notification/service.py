@@ -24,7 +24,9 @@ class NotificationService:
         self._send_auction_event(event_type=EventTypes.STARTED_AUCTION, auction=auction)
 
     def send_notification_about_finished_auction(self, auction: Auction):
-        self._send_auction_event(event_type=EventTypes.FINISHED_AUCTION, auction=auction)
+        self._send_auction_event(
+            event_type=EventTypes.FINISHED_AUCTION, auction=auction
+        )
 
     def send_notification_about_new_bid(self, bid: AuctionBid, socket_id: str):
         channel_name = Channels.AUCTION.format(id=bid.auction.pk)
@@ -32,14 +34,19 @@ class NotificationService:
         self._client.trigger(
             channels=channel_name,
             event_name=EventTypes.ADDED_BID,
-            data={'latest_bid': bid.value},
+            data={"latest_bid": bid.value},
             socket_id=socket_id,
         )
 
     def get_auction_id_from_channel_name(self, channel_name: str) -> Optional[int]:
-        parts = channel_name.split('-')
+        parts = channel_name.split("-")
 
-        if len(parts) == 3 and parts[0] == 'presence' and parts[1] == 'auction' and parts[2].isnumeric():
+        if (
+            len(parts) == 3
+            and parts[0] == "presence"
+            and parts[1] == "auction"
+            and parts[2].isnumeric()
+        ):
             return int(parts[2])
 
         return None

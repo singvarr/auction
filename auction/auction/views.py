@@ -27,7 +27,7 @@ from auction.auction.services.auction_bid import AuctionBidService
 from auction.auction.exceptions import (
     error_messages,
     InvalidAuctionStatusException,
-    InvalidBidValueException
+    InvalidBidValueException,
 )
 from auction.common.base_error_serializer import BaseErrorSerializer
 
@@ -62,7 +62,7 @@ class ListCreateAuctionView(ListCreateAPIView):
 
     @extend_schema(
         request=CreateUpdateAuctionSerializer,
-        responses={status.HTTP_201_CREATED: RetrieveAuctionSerializer}
+        responses={status.HTTP_201_CREATED: RetrieveAuctionSerializer},
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -98,8 +98,8 @@ class RetrieveUpdateAuctionView(RetrieveUpdateAPIView):
             status.HTTP_409_CONFLICT: OpenApiResponse(
                 response=BaseErrorSerializer,
                 description=error_messages["AUCTION_EDIT_FAILURE"],
-            )
-        }
+            ),
+        },
     )
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)
@@ -126,7 +126,7 @@ class StartAuctionView(APIView):
         request=None,
         responses={
             status.HTTP_200_OK: RetrieveAuctionSerializer,
-            status.HTTP_409_CONFLICT:  OpenApiResponse(
+            status.HTTP_409_CONFLICT: OpenApiResponse(
                 response=BaseErrorSerializer,
                 description=error_messages["AUCTION_START_FAILURE"],
             ),
@@ -171,14 +171,19 @@ class FinishAuctionView(APIView):
 class CreateListAuctionBidView(ListCreateAPIView):
     serializer_class = AuctionBidSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter)
-    ordering_fields = ("value", "created_at",)
+    ordering_fields = (
+        "value",
+        "created_at",
+    )
     ordering = ("-created_at",)
 
     def get_queryset(self):
         auction_id = self.kwargs["pk"]
         get_object_or_404(Auction, pk=auction_id)
 
-        return AuctionBid.objects.select_related("made_by").filter(auction_id=auction_id)
+        return AuctionBid.objects.select_related("made_by").filter(
+            auction_id=auction_id
+        )
 
     @extend_schema(
         responses={
@@ -208,7 +213,7 @@ class CreateListAuctionBidView(ListCreateAPIView):
                 response=BaseErrorSerializer,
                 description=InvalidBidValueException.default_detail,
             ),
-        }
+        },
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -220,7 +225,11 @@ class CreateListAuctionBidView(ListCreateAPIView):
         auction = get_object_or_404(Auction, pk=pk)
 
         service = AuctionBidService()
-        bid = service.create(data=input_serializer.validated_data, user=request.user, auction=auction)
+        bid = service.create(
+            data=input_serializer.validated_data,
+            user=request.user,
+            auction=auction,
+        )
 
         output_serializer = self.serializer_class(instance=bid)
 

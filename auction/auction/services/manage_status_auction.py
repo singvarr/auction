@@ -15,21 +15,27 @@ class ManageStatusAuctionService:
     def start(self) -> Auction:
         if self._auction.status != Auction.Status.NOT_CONDUCTED:
             raise InvalidAuctionStatusException(
-                detail=error_messages["AUCTION_START_FAILURE"].format(status=self._auction.status),
+                detail=error_messages["AUCTION_START_FAILURE"].format(
+                    status=self._auction.status
+                ),
             )
 
         self._auction.start_at = datetime.now()
         self._auction.status = Auction.Status.ACTIVE
         self._auction.save()
 
-        self._notification_service.send_notification_about_started_auction(auction=self._auction)
+        self._notification_service.send_notification_about_started_auction(
+            auction=self._auction
+        )
 
         return self._auction
 
     def finish(self) -> Auction:
         if self._auction.status != Auction.Status.ACTIVE:
             raise InvalidAuctionStatusException(
-                detail=error_messages["AUCTION_FINISH_FAILURE"].format(status=self._auction.status),
+                detail=error_messages["AUCTION_FINISH_FAILURE"].format(
+                    status=self._auction.status
+                ),
             )
 
         latest_bid = self._auction_bid_service.find_latest_bid(auction=self._auction)
@@ -46,6 +52,8 @@ class ManageStatusAuctionService:
 
             self._auction.save()
 
-            self._notification_service.send_notification_about_finished_auction(auction=self._auction)
+            self._notification_service.send_notification_about_finished_auction(
+                auction=self._auction
+            )
 
             return self._auction
