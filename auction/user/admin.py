@@ -9,7 +9,9 @@ from auction.user.models import User
 
 class UserCreationForm(forms.ModelForm):
     password = forms.CharField(label="Password", widget=forms.PasswordInput)
-    password_confirmation = forms.CharField(label="Password confirmation", widget=forms.PasswordInput)
+    password_confirmation = forms.CharField(
+        label="Password confirmation", widget=forms.PasswordInput
+    )
 
     class Meta:
         model = User
@@ -20,9 +22,9 @@ class UserCreationForm(forms.ModelForm):
         password_confirmation = self.cleaned_data.get("password_confirmation")
 
         if (
-            first_password and
-            password_confirmation and
-            first_password != password_confirmation
+            first_password
+            and password_confirmation
+            and first_password != password_confirmation
         ):
             raise ValidationError("Passwords don't match")
 
@@ -43,7 +45,15 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["email", "password", "first_name", "last_name", "avatar", "is_active", "is_admin"]
+        fields = [
+            "email",
+            "password",
+            "first_name",
+            "last_name",
+            "avatar",
+            "is_active",
+            "is_admin",
+        ]
 
 
 class UserAdmin(BaseUserAdmin):

@@ -25,7 +25,7 @@ class NotificationAuthView(APIView):
         responses={
             status.HTTP_200_OK: NotificationAuthOutputSerializer,
             status.HTTP_403_FORBIDDEN: BaseErrorSerializer,
-        }
+        },
     )
     def post(self, request, **_):
         """

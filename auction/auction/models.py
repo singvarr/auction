@@ -32,7 +32,12 @@ class Auction(models.Model):
         max_length=255,
     )
     lot = models.OneToOneField(Lot, on_delete=models.CASCADE)
-    winner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, default=None, null=True)
+    winner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        default=None,
+        null=True,
+    )
 
     @receiver(post_save)
     def notify_about_new_auction(sender, instance, created, **_):
@@ -45,4 +50,9 @@ class AuctionBid(models.Model):
     auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
     value = models.FloatField(validators=[MinValueValidator(0)])
     created_at = models.DateTimeField(auto_now_add=True)
-    made_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, default=None)
+    made_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None,
+    )

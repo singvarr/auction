@@ -6,7 +6,11 @@ from auction.user.models import User
 class RegisterUserSerializer(ModelSerializer):
     class Meta:
         model = User
-        exclude = ("is_active", "is_admin", "last_login",)
+        exclude = (
+            "is_active",
+            "is_admin",
+            "last_login",
+        )
         write_only_fields = ("password",)
 
     def to_internal_value(self, data):

@@ -24,7 +24,9 @@ class AuctionCRUDService:
         with transaction.atomic():
             if auction.status != Auction.Status.NOT_CONDUCTED:
                 raise InvalidAuctionStatusException(
-                    detail=error_messages["AUCTION_EDIT_FAILURE"].format(status=auction.status),
+                    detail=error_messages["AUCTION_EDIT_FAILURE"].format(
+                        status=auction.status
+                    ),
                 )
 
             auction.lot.name = self._data["name"]
