@@ -15,6 +15,10 @@ class PaymentService:
     def __init__(self) -> None:
         self._api_key = settings.STRIPE_API_KEY
 
+    @staticmethod
+    def convert_price_to_cents(price: float | int) -> int:
+        return int(price * 100)
+
     def enroll_auction(self, auction: Auction, user: User) -> str:
         if auction.status != Auction.Status.ACTIVE:
             raise InvalidAuctionStatusException()
@@ -54,7 +58,7 @@ class PaymentService:
 
         price = stripe.Price.create(
             product=product.id,
-            unit_amount=int(auction.access_fee * 100),
+            unit_amount=PaymentService.convert_price_to_cents(auction.access_fee),
             currency="usd",
         )
 
@@ -69,4 +73,12 @@ class PaymentService:
                 "product_id": product["id"],
                 "auction": auction,
             },
+        )
+
+    def update_price(self, auction: Auction):
+        price_id = auction.auctionpaymentinfo.price_id
+
+        stripe.Product.modify(
+            price_id,
+            unit_amount=PaymentService.convert_price_to_cents(auction.access_fee),
         )
