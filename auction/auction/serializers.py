@@ -6,6 +6,7 @@ from rest_framework.serializers import (
     IntegerField,
     ImageField,
     ModelSerializer,
+    PrimaryKeyRelatedField,
     Serializer,
     ValidationError,
 )
@@ -40,6 +41,7 @@ class CreateUpdateAuctionSerializer(Serializer):
     description = CharField()
     image = ImageField(allow_empty_file=True, allow_null=True, default=None)
     start_at = DateTimeField(allow_null=True, default=None)
+    access_fee = FloatField(allow_null=True, default=None)
 
     def validate_start_at(self, attr):
         if attr and attr < timezone.now():
@@ -55,10 +57,15 @@ class RetrieveAuctionSerializer(ModelSerializer):
             fields = ("id", "name", "initial_price", "description", "image")
 
     lot = RetrieveAuctionLotSerializer()
+    price_id = CharField(
+        source="auctionpaymentinfo.price_id",
+        allow_null=True,
+        default=None,
+    )
 
     class Meta:
         model = Auction
-        fields = ("id", "start_at", "lot")
+        fields = ("id", "start_at", "lot", "price_id", "access_fee")
         read_only_fields = ("id",)
 
 
@@ -81,3 +88,7 @@ class CreateAuctionBidSerializer(ModelSerializer):
     class Meta:
         model = AuctionBid
         fields = "value", "socket_id"
+
+
+class EnrollAuctionInputSerializer(Serializer):
+    auction = PrimaryKeyRelatedField(queryset=Auction.objects.all())
