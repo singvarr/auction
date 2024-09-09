@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
+from auction.auction.models import Auction
 
 
 class UserManager(BaseUserManager):
@@ -42,6 +43,7 @@ class User(AbstractBaseUser):
     avatar = models.ImageField(upload_to="users/", null=True, default=None)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    auctions = models.ManyToManyField(Auction)
 
     def has_perm(self, perm, obj=None):
         return True
