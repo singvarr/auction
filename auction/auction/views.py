@@ -10,6 +10,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser
 from django.db.models import Count
+from django.http.response import HttpResponseRedirectBase
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
@@ -30,6 +31,7 @@ from auction.auction.exceptions import (
     InvalidBidValueException,
 )
 from auction.common.base_error_serializer import BaseErrorSerializer
+from auction.payment.service import PaymentService
 
 
 class ListCreateAuctionView(ListCreateAPIView):
@@ -234,3 +236,20 @@ class CreateListAuctionBidView(ListCreateAPIView):
         output_serializer = self.serializer_class(instance=bid)
 
         return Response(status=status.HTTP_201_CREATED, data=output_serializer.data)
+
+
+class EnrollAuctionView(APIView):
+    http_method_names = ["post"]
+
+    def post(self, request, **_):
+        auction_id = request.kwargs.get("pk")
+
+        auction = get_object_or_404(Auction, auction_id)
+
+        payment_service = PaymentService()
+        session_url = payment_service.enroll_auction(auction=auction, user=request.user)
+
+        return HttpResponseRedirectBase(
+            status=status.HTTP_303_SEE_OTHER,
+            redirect_to=session_url,
+        )
