@@ -22,10 +22,9 @@ class AuctionCRUDService:
                 lot=lot,
                 start_at=self._data["start_at"],
                 access_fee=self._data["access_fee"],
-                requires_payment=self._data["access_fee"] is None,
             )
 
-            if auction.requires_payment:
+            if auction.access_fee is not None:
                 self._payment_service.save_auction_payment_details(auction=auction)
 
             return auction
@@ -48,7 +47,6 @@ class AuctionCRUDService:
             auction.lot.save()
 
             auction.access_fee = self._data["access_fee"]
-            auction.requires_payment = self._data["access_fee"] is None
             auction.start_at = self._data["start_at"]
             auction.save()
 

@@ -47,7 +47,7 @@ class PaymentService:
         return session.url
 
     def save_auction_payment_details(self, auction: Auction):
-        if not auction.requires_payment or not auction.access_fee:
+        if not auction.access_fee:
             raise InvalidAuctionStatusException()
 
         product = stripe.Product.create(
