@@ -1,4 +1,4 @@
-from rest_framework.generics import CreateAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from auction.user.serializers import RegisterUserSerializer, RetrieveUserSerializer
@@ -12,6 +12,9 @@ class RegisterUserView(CreateAPIView):
 
 
 class RetrieveUserView(RetrieveAPIView):
-    queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = RetrieveUserSerializer
+    queryset = User.objects.all()
+
+    def get_object(self):
+        return get_object_or_404(self.get_queryset(), email=self.kwargs["email"])

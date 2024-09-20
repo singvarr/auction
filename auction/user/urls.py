@@ -13,5 +13,5 @@ urlpatterns = [
     path(route="login/", view=TokenObtainPairView.as_view(), name="login"),
     path(route="refresh/", view=TokenRefreshView.as_view(), name="refresh"),
     path(route="revoke/", view=TokenBlacklistView.as_view(), name="revoke"),
-    path(route="<int:pk>/", view=RetrieveUserView.as_view(), name="user"),
+    path(route="<str:email>/", view=RetrieveUserView.as_view(), name="user"),
 ]
