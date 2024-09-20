@@ -38,6 +38,11 @@ class Auction(models.Model):
         default=None,
         null=True,
     )
+    access_fee = models.FloatField(
+        validators=[MinValueValidator(0.01)],
+        null=True,
+        default=None,
+    )
 
     @receiver(post_save)
     def notify_about_new_auction(sender, instance, created, **_):

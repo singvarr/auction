@@ -10,11 +10,11 @@ class RegisterUserSerializer(ModelSerializer):
             "is_active",
             "is_admin",
             "last_login",
+            "auctions",
         )
         write_only_fields = ("password",)
 
-    def to_internal_value(self, data):
-        if data.get("password"):
-            data["password"] = make_password(data["password"])
+    def update(self, instance, validated_data):
+        validated_data["password"] = make_password(validated_data["password"])
 
-        return super().to_internal_value(data)
+        return super().update(instance, validated_data)

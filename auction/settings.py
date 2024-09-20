@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django_filters",
     "auction.auction",
     "auction.user",
+    "auction.payment",
 ]
 
 MIDDLEWARE = [
@@ -174,3 +175,7 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+
+STRIPE_API_KEY = os.environ["STRIPE_API_KEY"]
+
+FRONT_END_URL = os.environ["FRONT_END_URL"]
