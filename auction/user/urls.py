@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenBlacklistView,
 )
-from auction.user.views import RegisterUserView
+from auction.user.views import RegisterUserView, RetrieveUserView
 
 app_name = "user"
 
@@ -13,4 +13,5 @@ urlpatterns = [
     path(route="login/", view=TokenObtainPairView.as_view(), name="login"),
     path(route="refresh/", view=TokenRefreshView.as_view(), name="refresh"),
     path(route="revoke/", view=TokenBlacklistView.as_view(), name="revoke"),
+    path(route="<int:pk>/", view=RetrieveUserView.as_view(), name="user"),
 ]

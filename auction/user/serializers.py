@@ -18,3 +18,9 @@ class RegisterUserSerializer(ModelSerializer):
             data["password"] = make_password(data["password"])
 
         return super().to_internal_value(data)
+
+
+class RetrieveUserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "first_name", "email", "avatar", "is_admin")
