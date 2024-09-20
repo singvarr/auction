@@ -1,4 +1,4 @@
-import stripe
+from logging import getLogger
 from django.conf import settings
 from auction.auction.models import Auction
 from auction.user.models import User
@@ -9,11 +9,13 @@ from auction.payment.exceptions import (
     UserAlreadyEnrolledException,
 )
 from auction.payment.models import AuctionPaymentInfo
+from auction.payment.stripe_client import stripe
 
 
 class PaymentService:
     def __init__(self) -> None:
         self._api_key = settings.STRIPE_API_KEY
+        self._logger = getLogger(__name__)
 
     @staticmethod
     def convert_price_to_cents(price: float | int) -> int:
@@ -47,38 +49,50 @@ class PaymentService:
         return session.url
 
     def save_auction_payment_details(self, auction: Auction):
-        if not auction.access_fee:
-            raise InvalidAuctionStatusException()
+        try:
+            if not auction.access_fee:
+                raise InvalidAuctionStatusException()
 
-        product = stripe.Product.create(
-            name=f"Auction for {auction.lot.name}",
-            description=auction.lot.description,
-            images=[auction.lot.image.url],
-        )
+            product_data = {
+                "name": f"Auction for {auction.lot.name}",
+                "description": auction.lot.description,
+            }
 
-        price = stripe.Price.create(
-            product=product.id,
-            unit_amount=PaymentService.convert_price_to_cents(auction.access_fee),
-            currency="usd",
-        )
+            if auction.lot.image:
+                product_data["images"] = [auction.lot.image.url]
 
-        AuctionPaymentInfo.objects.update_or_create(
-            auction=auction,
-            defaults={
-                "price_id": price["id"],
-                "product_id": product["id"],
-            },
-            create_defaults={
-                "price_id": price["id"],
-                "product_id": product["id"],
-                "auction": auction,
-            },
-        )
+            product = stripe.Product.create(**product_data)
+
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=PaymentService.convert_price_to_cents(auction.access_fee),
+                currency="usd",
+            )
+
+            AuctionPaymentInfo.objects.update_or_create(
+                auction=auction,
+                defaults={
+                    "price_id": price["id"],
+                    "product_id": product["id"],
+                },
+                create_defaults={
+                    "price_id": price["id"],
+                    "product_id": product["id"],
+                    "auction": auction,
+                },
+            )
+        except Exception as error:
+            self._logger.error(f"Failed to sync auction {auction.pk} details in stripe")
+            self._logger.error(error)
 
     def update_price(self, auction: Auction):
-        price_id = auction.auctionpaymentinfo.price_id
+        try:
+            price_id = auction.auctionpaymentinfo.price_id
 
-        stripe.Product.modify(
-            price_id,
-            unit_amount=PaymentService.convert_price_to_cents(auction.access_fee),
-        )
+            stripe.Product.modify(
+                price_id,
+                unit_amount=PaymentService.convert_price_to_cents(auction.access_fee),
+            )
+        except Exception as error:
+            self._logger.error(f"Failed to update auction {auction.pk} details in stripe")
+            self._logger.error(error)
