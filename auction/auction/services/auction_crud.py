@@ -1,6 +1,6 @@
 from django.db import transaction
 from auction.auction.models import Auction, Lot
-from auction.auction.exceptions import error_messages
+from auction.auction.exceptions import error_messages, InvalidAuctionStatusException
 
 
 class AuctionCRUDService:
